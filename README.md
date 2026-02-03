@@ -9,8 +9,8 @@
 **Rust XPLM** provides a convenient interface for X-Plane plugin development in the Rust programming language for all
 platforms.
 
-As we use the [X-Plane SDK](https://developer.x-plane.com/sdk/) version 3.0, any plugin created with this library
-supports X-Plane version 11.10 or later.
+As we use the [X-Plane SDK](https://developer.x-plane.com/sdk/) version 4.2.0, any plugin created with this library
+supports X-Plane version 12.3.0 or later.
 
 ## Status
 
@@ -88,8 +88,8 @@ The [cross](https://github.com/cross-rs/cross) tool may help compile plugins for
 
 Licensed under either of
 
-* Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-* MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
 
