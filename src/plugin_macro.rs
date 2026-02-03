@@ -19,7 +19,7 @@ macro_rules! xplane_plugin {
             };
 
         #[allow(non_snake_case)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn XPluginStart(
             name: *mut ::std::os::raw::c_char,
             signature: *mut ::std::os::raw::c_char,
@@ -29,25 +29,25 @@ macro_rules! xplane_plugin {
         }
 
         #[allow(non_snake_case)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn XPluginStop() {
             ::xplm::plugin::internal::xplugin_stop(&mut PLUGIN)
         }
 
         #[allow(non_snake_case)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn XPluginEnable() -> ::std::os::raw::c_int {
             ::xplm::plugin::internal::xplugin_enable(&mut PLUGIN)
         }
 
         #[allow(non_snake_case)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn XPluginDisable() {
             ::xplm::plugin::internal::xplugin_disable(&mut PLUGIN)
         }
 
         #[allow(non_snake_case)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn XPluginReceiveMessage(
             from: ::std::os::raw::c_int,
             message: ::std::os::raw::c_int,

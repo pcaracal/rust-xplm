@@ -8,6 +8,7 @@ pub struct VersionInfo {
 }
 
 impl VersionInfo {
+    #[must_use]
     pub fn get() -> Self {
         let mut xplane_version: i32 = -1;
         let mut xplm_version: i32 = -1;

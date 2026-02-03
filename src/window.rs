@@ -8,9 +8,10 @@ use xplm_sys;
 use super::geometry::{Point, Rect};
 
 /// Cursor states that windows can apply
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub enum Cursor {
     /// X-Plane draws the default cursor
+    #[default]
     Default,
     /// X-Plane draws an arrow cursor (not any other cursor type)
     Arrow,
@@ -26,12 +27,6 @@ impl Cursor {
             Cursor::Arrow => xplm_sys::xplm_CursorArrow as xplm_sys::XPLMCursorStatus,
             Cursor::None => xplm_sys::xplm_CursorHidden as xplm_sys::XPLMCursorStatus,
         }
-    }
-}
-
-impl Default for Cursor {
-    fn default() -> Self {
-        Cursor::Default
     }
 }
 
@@ -174,13 +169,15 @@ impl Drop for Window {
 }
 
 /// Callback in which windows are drawn
-unsafe extern "C" fn window_draw(_window: xplm_sys::XPLMWindowID, refcon: *mut c_void) {
+extern "C" fn window_draw(_window: xplm_sys::XPLMWindowID, refcon: *mut c_void) {
     let window = refcon as *mut Window;
-    (*window).delegate.draw(&*window);
+    unsafe {
+        (*window).delegate.draw(&*window);
+    }
 }
 
 /// Keyboard callback
-unsafe extern "C" fn window_key(
+extern "C" fn window_key(
     _window: xplm_sys::XPLMWindowID,
     key: c_char,
     flags: xplm_sys::XPLMKeyFlags,
@@ -188,53 +185,55 @@ unsafe extern "C" fn window_key(
     refcon: *mut c_void,
     losing_focus: c_int,
 ) {
-    let window = refcon as *mut Window;
-    if losing_focus == 0 {
-        match KeyEvent::from_xplm(key, flags, virtual_key) {
-            Ok(event) => (*window).delegate.keyboard_event(&*window, event),
-            Err(e) => super::debugln!("Invalid key event received: {:?}", e),
+    unsafe {
+        let window = refcon as *mut Window;
+        if losing_focus == 0 {
+            match KeyEvent::from_xplm(key, flags, virtual_key) {
+                Ok(event) => (*window).delegate.keyboard_event(&*window, event),
+                Err(e) => super::debugln!("Invalid key event received: {:?}", e),
+            }
         }
     }
 }
 
 /// Mouse callback
-unsafe extern "C" fn window_mouse(
+extern "C" fn window_mouse(
     _window: xplm_sys::XPLMWindowID,
     x: c_int,
     y: c_int,
     status: xplm_sys::XPLMMouseStatus,
     refcon: *mut c_void,
 ) -> c_int {
-    let window = refcon as *mut Window;
-    if let Some(action) = MouseAction::from_xplm(status) {
-        let position = Point::from((x, y));
-        let event = MouseEvent::new(position, action);
-        let propagate = (*window).delegate.mouse_event(&*window, event);
-        if propagate {
-            0
+    unsafe {
+        let window = refcon.cast::<Window>();
+        if let Some(action) = MouseAction::from_xplm(status) {
+            let position = Point::from((x, y));
+            let event = MouseEvent::new(position, action);
+            let propagate = (*window).delegate.mouse_event(&*window, event);
+            i32::from(!propagate)
         } else {
-            1
+            // Propagate
+            0
         }
-    } else {
-        // Propagate
-        0
     }
 }
 
 /// Cursor callback
-unsafe extern "C" fn window_cursor(
+extern "C" fn window_cursor(
     _window: xplm_sys::XPLMWindowID,
     x: c_int,
     y: c_int,
     refcon: *mut c_void,
 ) -> xplm_sys::XPLMCursorStatus {
-    let window = refcon as *mut Window;
-    let cursor = (*window).delegate.cursor(&*window, Point::from((x, y)));
-    cursor.as_xplm()
+    unsafe {
+        let window = refcon.cast::<Window>();
+        let cursor = (*window).delegate.cursor(&*window, Point::from((x, y)));
+        cursor.as_xplm()
+    }
 }
 
 /// Scroll callback
-unsafe extern "C" fn window_scroll(
+extern "C" fn window_scroll(
     _window: xplm_sys::XPLMWindowID,
     x: c_int,
     y: c_int,
@@ -242,23 +241,21 @@ unsafe extern "C" fn window_scroll(
     clicks: c_int,
     refcon: *mut c_void,
 ) -> c_int {
-    let window = refcon as *mut Window;
+    unsafe {
+        let window = refcon.cast::<Window>();
 
-    let position = Point::from((x, y));
-    let (dx, dy) = if wheel == 1 {
-        // Horizontal
-        (clicks, 0)
-    } else {
-        // Vertical
-        (0, clicks)
-    };
-    let event = ScrollEvent::new(position, dx, dy);
+        let position = Point::from((x, y));
+        let (dx, dy) = if wheel == 1 {
+            // Horizontal
+            (clicks, 0)
+        } else {
+            // Vertical
+            (0, clicks)
+        };
+        let event = ScrollEvent::new(position, dx, dy);
 
-    let propagate = (*window).delegate.scroll_event(&*window, event);
-    if propagate {
-        0
-    } else {
-        1
+        let propagate = (*window).delegate.scroll_event(&*window, event);
+        i32::from(!propagate)
     }
 }
 
@@ -552,9 +549,9 @@ impl KeyEvent {
         flags: xplm_sys::XPLMKeyFlags,
         virtual_key: c_char,
     ) -> Result<Self, KeyEventError> {
-        let basic_char = match key as u8 {
+        let basic_char = match key.cast_unsigned() {
             // Accept printable characters, including spaces and tabs
-            b'\t' | b' '..=b'~' => Some(key as u8 as char),
+            b'\t' | b' '..=b'~' => Some(key.cast_unsigned() as char),
             _ => None,
         };
         let action = if flags & xplm_sys::xplm_DownFlag as ::xplm_sys::XPLMKeyFlags != 0 {

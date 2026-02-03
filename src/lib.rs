@@ -1,10 +1,9 @@
 #![deny(trivial_casts)]
+#![allow(clippy::missing_errors_doc)]
 
 //! Bindings to the X-Plane plugin SDK
 
 extern crate xplm_sys;
-
-use std::ffi::CString;
 
 /// FFI utilities
 mod ffi;
@@ -41,19 +40,6 @@ pub mod versions;
 /// Relatively low-level windows
 pub mod window;
 
-/// Writes a message to the developer console and Log.txt file
-///
-/// No line terminator is added.
-#[deprecated(note = "Please use the debug! or debugln! macro instead")]
-pub fn debug<S: Into<String>>(message: S) {
-    match CString::new(message.into()) {
-        Ok(message_c) => unsafe { XPLMDebugString(message_c.as_ptr()) },
-        Err(_) => unsafe {
-            XPLMDebugString("[xplm] Invalid debug message\n\0".as_ptr() as *const _)
-        },
-    }
-}
-
 /// Re-export the signature of XPLMDebugString as it is needed in the debug macros.
 /// By re-exporting we can avoid that users have to import xplm_sys into their plugin.
 #[doc(hidden)]
@@ -83,7 +69,7 @@ macro_rules! debugln {
         #[allow(unused_unsafe)] // Disable unnecessary unsafe block warning when embedded in unsafe function
         match std::ffi::CString::new(formatted_string) {
             Ok(c_str) => unsafe { $crate::XPLMDebugString(c_str.as_ptr()) },
-            Err(_) => unsafe { $crate::XPLMDebugString("[xplm] Invalid debug message\n\0".as_ptr() as *const _) }
+            Err(_) => unsafe { $crate::XPLMDebugString(c"[xplm] Invalid debug message\n".as_ptr()) }
         }
     });
 }
@@ -103,8 +89,6 @@ pub fn speak<S: Into<String>>(msg: S) {
         Ok(msg) => unsafe {
             xplm_sys::XPLMSpeakString(msg.as_ptr());
         },
-        Err(_) => unsafe {
-            crate::XPLMDebugString("[xplm] Invalid speak message\n\0".as_ptr() as *const _)
-        },
+        Err(_) => unsafe { crate::XPLMDebugString(c"[xplm] Invalid speak message\n".as_ptr()) },
     }
 }
