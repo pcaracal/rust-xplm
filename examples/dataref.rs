@@ -1,6 +1,6 @@
 extern crate xplm;
 
-use xplm::data::borrowed::{DataRef, FindError};
+use xplm::data::borrowed::DataRef;
 use xplm::data::{ArrayRead, DataRead, ReadOnly, ReadWrite, StringRead};
 use xplm::plugin::{Plugin, PluginInfo};
 use xplm::{debugln, xplane_plugin};
@@ -36,8 +36,7 @@ impl DataRefPlugin {
 }
 
 impl Plugin for DataRefPlugin {
-    type Error = FindError;
-    fn start() -> Result<Self, Self::Error> {
+    fn start() -> anyhow::Result<Self> {
         let plugin = DataRefPlugin {
             has_joystick: DataRef::find("sim/joystick/has_joystick")?,
             earth_mu: DataRef::find("sim/physics/earth_mu")?,
@@ -50,7 +49,7 @@ impl Plugin for DataRefPlugin {
         Ok(plugin)
     }
 
-    fn enable(&mut self) -> Result<(), Self::Error> {
+    fn enable(&mut self) -> anyhow::Result<()> {
         self.test_datarefs();
         Ok(())
     }

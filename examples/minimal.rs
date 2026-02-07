@@ -6,9 +6,7 @@ use xplm::{debugln, xplane_plugin};
 struct MinimalPlugin;
 
 impl Plugin for MinimalPlugin {
-    type Error = std::convert::Infallible;
-
-    fn start() -> Result<Self, Self::Error> {
+    fn start() -> anyhow::Result<Self> {
         // The following message should be visible in the developer console and the Log.txt file
         debugln!("Hello, World! From the Minimal Rust Plugin");
         Ok(MinimalPlugin)

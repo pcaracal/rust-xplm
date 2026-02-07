@@ -12,6 +12,7 @@ edition = "2024"
 [dependencies]
 xplm-sys = { git = "https://github.com/pcaracal/xplm-sys.git" }
 thiserror = "2.0.18"
+anyhow = "1.0.101"
 
 [profile.release]
 opt-level = 3

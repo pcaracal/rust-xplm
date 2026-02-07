@@ -14,9 +14,7 @@ struct MenuPlugin {
 }
 
 impl Plugin for MenuPlugin {
-    type Error = std::convert::Infallible;
-
-    fn start() -> Result<Self, Self::Error> {
+    fn start() -> anyhow::Result<Self> {
         let plugins_submenu = Menu::new("Menu Test Plugin").unwrap();
         plugins_submenu.add_child(CheckItem::new("Checkable 1", false, CheckHandler1).unwrap());
         plugins_submenu.add_child(ActionItem::new("Action 1", ActionHandler1).unwrap());

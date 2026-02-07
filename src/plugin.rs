@@ -22,19 +22,16 @@ pub struct PluginInfo {
 
 /// The trait that all plugins should implement
 pub trait Plugin: Sized {
-    /// The error type that a plugin may encounter when starting up or enabling
-    type Error: std::error::Error;
-
     /// Called when X-Plane loads this plugin
     ///
     /// On success, returns a plugin object
-    fn start() -> Result<Self, Self::Error>;
+    fn start() -> anyhow::Result<Self>;
     /// Called when the plugin is enabled
     ///
     /// If this function returns an Err, the plugin will remain disabled.
     ///
     /// The default implementation returns Ok(()).
-    fn enable(&mut self) -> Result<(), Self::Error> {
+    fn enable(&mut self) -> anyhow::Result<()> {
         Ok(())
     }
     /// Called when the plugin is disabled
