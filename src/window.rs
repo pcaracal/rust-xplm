@@ -124,6 +124,7 @@ impl Window {
     }
 
     /// Returns the geometry of this window
+    #[must_use]
     pub fn geometry(&self) -> Rect<i32> {
         unsafe {
             let mut left = 0;
@@ -149,6 +150,7 @@ impl Window {
     }
 
     /// Returns true if this window is visible
+    #[must_use]
     pub fn visible(&self) -> bool {
         1 == unsafe { xplm_sys::XPLMGetWindowIsVisible(self.id) }
     }
@@ -157,6 +159,11 @@ impl Window {
         unsafe {
             xplm_sys::XPLMSetWindowIsVisible(self.id, visible as _);
         }
+    }
+
+    #[must_use]
+    pub fn id(&self) -> xplm_sys::XPLMWindowID {
+        self.id
     }
 }
 
